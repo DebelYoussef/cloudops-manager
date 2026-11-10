@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DEVOPS
+  VIEWER
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum EnvType {
+  DEV
+  STAGING
+  PROD
+}
+
+enum ServerStatus {
+  ONLINE
+  OFFLINE
+  MAINTENANCE
+}
+
+enum AppStatus {
+  RUNNING
+  STOPPED
+  FAILED
+}
+
+enum MetricType {
+  CPU
+  RAM
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role     @default(VIEWER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  memberships      ProjectMember[]
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+  createdRules     AlertRule[]
+  handledIncidents Incident[]
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+
+  members      ProjectMember[]
+  environments Environment[]
+}
+
+model ProjectMember {
+  id          String   @id @default(uuid())
+  projectRole String
+  assignedAt  DateTime @default(now())
+
+  userId    String
+  projectId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+}
+
+model Environment {
+  id   String  @id @default(uuid())
+  name EnvType
+
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  servers   Server[]
+
+  @@unique([projectId, name])
+}
+
+model Server {
+  id        String       @id @default(uuid())
+  name      String
+  provider  String
+  region    String
+  cpuCores  Int
+  ramGb     Int
+  storageGb Int
+  ipAddress String
+  status    ServerStatus @default(ONLINE)
+  createdAt DateTime     @default(now())
+
+  environmentId String
+  environment   Environment   @relation(fields: [environmentId], references: [id])
+  applications  Application[]
+  metrics       Metric[]
+  alertRules    AlertRule[]
+  incidents     Incident[]
+}
+
+model Application {
+  id        String    @id @default(uuid())
+  name      String
+  version   String
+  status    AppStatus @default(RUNNING)
+  createdAt DateTime  @default(now())
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+}
+
+model Metric {
+  id        String   @id @default(uuid())
+  cpuUsage  Float
+  ramUsage  Float
+  timestamp DateTime @default(now())
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, timestamp])
+}
+
+model AlertRule {
+  id         String     @id @default(uuid())
+  name       String
+  metricType MetricType
+  operator   String     @default(">")
+  threshold  Float
+  severity   Severity
+  isActive   Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+
+  serverId    String?
+  server      Server?    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdById String?
+  createdBy   User?      @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  incidents   Incident[]
+}
+
+model Incident {
+  id             String         @id @default(uuid())
+  message        String
+  valueAtTrigger Float
+  severity       Severity
+  status         IncidentStatus @default(OPEN)
+  openedAt       DateTime       @default(now())
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+
+  ruleId           String
+  rule             AlertRule      @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  serverId         String
+  server           Server         @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  acknowledgedById String?
+  acknowledgedBy   User?          @relation(fields: [acknowledgedById], references: [id], onDelete: SetNull)
+  notifications    Notification[]
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incidentId String?
+  incident   Incident? @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  action     String
+  entityType String
+  entityId   String?
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
