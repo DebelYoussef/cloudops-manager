@@ -8,8 +8,11 @@ import { MonitoringModule } from './monitoring/monitoring.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { NotificationsModule } from './notifications/notifications.module';
 
+import { ServersModule } from './servers/servers.module';
+
 @Module({
   imports: [
+    ServersModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     PrismaModule,
