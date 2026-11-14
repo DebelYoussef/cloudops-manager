@@ -142,3 +142,16 @@ GitHub link, deployed or demonstrable application on a VM, Docker files, install
 ## Getting started
 
 _To be completed in week 7 (prerequisites, `.env` setup, `docker compose up`, default seed accounts)._
+
+## Run the database
+
+1. Copy `.env.example` to `.env` and adjust the values.
+2. Start PostgreSQL:
+   ```bash
+   docker compose up -d db
+   ```
+3. Check that it is healthy: `docker compose ps`
+4. Stop it: `docker compose down` (data is kept in the `pgdata` volume).
+   Reset everything: `docker compose down -v`.
+
+After pulling new code: `cd apps/api && npm install && npx prisma generate`.
