@@ -6,9 +6,11 @@ import {
   Delete,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -29,75 +31,90 @@ export class ProjectsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List projects with search and pagination' })
+  @ApiOperation({ summary: 'Get all projects with filters and pagination' })
   findAll(@Query() query: QueryProjectsDto) {
     return this.projectsService.findAll(query);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get project details, members and environments' })
-  findOne(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Get project details with members and environments' })
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.projectsService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a project' })
-  update(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateProjectDto,
+  ) {
     return this.projectsService.update(id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a project' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.projectsService.remove(id);
   }
+
+  // ───────── Members ─────────
 
   @Post(':id/members')
   @ApiOperation({ summary: 'Add a member to a project' })
   addMember(
-    @Param('id') projectId: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateProjectMemberDto,
   ) {
-    return this.projectsService.addMember(projectId, dto);
+    return this.projectsService.addMember(id, dto);
   }
 
   @Patch(':id/members/:userId')
   @ApiOperation({ summary: 'Update a project member role' })
   updateMember(
-    @Param('id') projectId: string,
-    @Param('userId') userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('userId', ParseUUIDPipe) userId: string,
     @Body() dto: UpdateProjectMemberDto,
   ) {
-    return this.projectsService.updateMember(projectId, userId, dto);
+    return this.projectsService.updateMember(id, userId, dto);
   }
 
   @Delete(':id/members/:userId')
-  @ApiOperation({ summary: 'Remove a member from a project' })
+  @ApiOperation({ summary: 'Remove a project member' })
   removeMember(
-    @Param('id') projectId: string,
-    @Param('userId') userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('userId', ParseUUIDPipe) userId: string,
   ) {
-    return this.projectsService.removeMember(projectId, userId);
+    return this.projectsService.removeMember(id, userId);
   }
 
+  // ───────── Environments (of a project) ─────────
+
   @Post(':id/environments')
-  @ApiOperation({ summary: 'Create an environment in a project' })
+  @ApiOperation({ summary: 'Create an environment for a project' })
   createEnvironment(
-    @Param('id') projectId: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateEnvironmentDto,
   ) {
-    return this.projectsService.createEnvironment(projectId, dto);
+    return this.projectsService.createEnvironment(id, dto);
   }
 
   @Get(':id/environments')
-  @ApiOperation({ summary: 'List project environments' })
-  findEnvironments(@Param('id') projectId: string) {
-    return this.projectsService.findEnvironments(projectId);
+  @ApiOperation({ summary: 'Get project environments' })
+  findEnvironments(@Param('id', ParseUUIDPipe) id: string) {
+    return this.projectsService.findEnvironments(id);
   }
+}
 
-  @Delete('environments/:id')
+// DELETE /environments/:id : contrôleur séparé pour obtenir bien cette URL
+// (dans ProjectsController, le préfixe donnerait /projects/environments/:id)
+@ApiTags('Projects')
+@Controller('environments')
+export class EnvironmentsController {
+  constructor(private readonly projectsService: ProjectsService) {}
+
+  @Delete(':id')
   @ApiOperation({ summary: 'Delete an environment' })
-  removeEnvironment(@Param('id') id: string) {
+  removeEnvironment(@Param('id', ParseUUIDPipe) id: string) {
     return this.projectsService.removeEnvironment(id);
   }
 }
