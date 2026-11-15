@@ -4,7 +4,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
 const compare = (v: number, op: string, t: number) =>
-  op === '>' ? v > t : op === '>=' ? v >= t : op === '<' ? v < t : op === '<=' ? v <= t : false;
+  op === '>'
+    ? v > t
+    : op === '>='
+      ? v >= t
+      : op === '<'
+        ? v < t
+        : op === '<='
+          ? v <= t
+          : false;
 
 @Injectable()
 export class AlertEvaluationService {
@@ -17,16 +25,24 @@ export class AlertEvaluationService {
 
   async evaluate(metric: Metric): Promise<void> {
     const rules = await this.prisma.alertRule.findMany({
-      where: { isActive: true, OR: [{ serverId: metric.serverId }, { serverId: null }] },
+      where: {
+        isActive: true,
+        OR: [{ serverId: metric.serverId }, { serverId: null }],
+      },
     });
 
     for (const rule of rules) {
-      const value = rule.metricType === 'CPU' ? metric.cpuUsage : metric.ramUsage;
+      const value =
+        rule.metricType === 'CPU' ? metric.cpuUsage : metric.ramUsage;
       if (!compare(value, rule.operator, rule.threshold)) continue;
 
       // Pas de doublon : un incident encore ouvert pour cette règle et ce serveur
       const open = await this.prisma.incident.findFirst({
-        where: { ruleId: rule.id, serverId: metric.serverId, status: { in: ['OPEN', 'ACKNOWLEDGED'] } },
+        where: {
+          ruleId: rule.id,
+          serverId: metric.serverId,
+          status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+        },
       });
       if (open) continue;
 

@@ -35,7 +35,9 @@ export class MonitoringService {
     };
     const limit = q.limit ?? 100;
     const rows = await this.prisma.metric.findMany({
-      where, orderBy: { timestamp: 'desc' }, take: limit,
+      where,
+      orderBy: { timestamp: 'desc' },
+      take: limit,
     });
     return rows.reverse(); // ordre chronologique, pratique pour les graphiques
   }
@@ -49,13 +51,18 @@ export class MonitoringService {
     });
     const expected = (hours * 3600) / SAMPLE_INTERVAL_S;
     const last = await this.prisma.metric.findFirst({
-      where: { serverId }, orderBy: { timestamp: 'desc' }, select: { timestamp: true },
+      where: { serverId },
+      orderBy: { timestamp: 'desc' },
+      select: { timestamp: true },
     });
     return {
       serverId,
       status: server.status,
       windowHours: hours,
-      availabilityPercent: Math.min(100, Math.round((count / expected) * 1000) / 10),
+      availabilityPercent: Math.min(
+        100,
+        Math.round((count / expected) * 1000) / 10,
+      ),
       lastMetricAt: last?.timestamp ?? null,
     };
   }

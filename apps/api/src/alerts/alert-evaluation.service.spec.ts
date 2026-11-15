@@ -11,7 +11,14 @@ describe('AlertEvaluationService', () => {
   };
   const notifications = { createForIncident: jest.fn() };
   const metric: any = { serverId: 's1', cpuUsage: 95, ramUsage: 40 };
-  const rule = { id: 'r1', name: 'CPU high', metricType: 'CPU', operator: '>', threshold: 80, severity: 'HIGH' };
+  const rule = {
+    id: 'r1',
+    name: 'CPU high',
+    metricType: 'CPU',
+    operator: '>',
+    threshold: 80,
+    severity: 'HIGH',
+  };
 
   beforeEach(async () => {
     jest.resetAllMocks();

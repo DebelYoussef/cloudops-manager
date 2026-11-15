@@ -8,16 +8,18 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
   app.enableCors({ origin: true, credentials: true });
-  app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, transform: true }),
-  );
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const config = new DocumentBuilder()
     .setTitle('CloudOps Manager API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-  SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, config));
+  SwaggerModule.setup(
+    'api/docs',
+    app,
+    SwaggerModule.createDocument(app, config),
+  );
 
   await app.listen(process.env.PORT ?? 3001);
 }

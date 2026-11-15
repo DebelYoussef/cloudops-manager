@@ -7,21 +7,30 @@ describe('MonitoringService', () => {
   let service: MonitoringService;
   const prisma = {
     server: { findUnique: jest.fn() },
-    metric: { create: jest.fn(), findMany: jest.fn(), count: jest.fn(), findFirst: jest.fn() },
+    metric: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+      findFirst: jest.fn(),
+    },
   };
 
   beforeEach(async () => {
     jest.resetAllMocks();
     const mod = await Test.createTestingModule({
-      providers: [MonitoringService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        MonitoringService,
+        { provide: PrismaService, useValue: prisma },
+      ],
     }).compile();
     service = mod.get(MonitoringService);
   });
 
   it('rejects a metric for an unknown server', async () => {
     prisma.server.findUnique.mockResolvedValue(null);
-    await expect(service.create({ serverId: 'x', cpuUsage: 1, ramUsage: 1 }))
-      .rejects.toBeInstanceOf(NotFoundException);
+    await expect(
+      service.create({ serverId: 'x', cpuUsage: 1, ramUsage: 1 }),
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('creates a metric for an existing server', async () => {

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateMetricDto } from './dto/create-metric.dto';
 import { QueryMetricsDto } from './dto/query-metrics.dto';
@@ -11,7 +19,9 @@ export class MonitoringController {
 
   @Post('metrics')
   @ApiOperation({ summary: 'Record a metric for a server' })
-  create(@Body() dto: CreateMetricDto) { return this.service.create(dto); }
+  create(@Body() dto: CreateMetricDto) {
+    return this.service.create(dto);
+  }
 
   @Get('servers/:id/metrics')
   @ApiOperation({ summary: 'Metric history of a server (from, to, limit)' })
