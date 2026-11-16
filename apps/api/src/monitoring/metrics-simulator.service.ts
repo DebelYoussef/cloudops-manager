@@ -24,13 +24,17 @@ export class MetricsSimulatorService {
 
   @Cron('*/15 * * * * *')
   async tick() {
-    if (this.config.get('SIMULATOR_ENABLED') === 'false' || this.running) return;
+    if (this.config.get('SIMULATOR_ENABLED') === 'false' || this.running)
+      return;
     this.running = true;
     try {
-      const servers = await this.prisma.server.findMany({ select: { id: true, status: true } });
+      const servers = await this.prisma.server.findMany({
+        select: { id: true, status: true },
+      });
       for (const s of servers) {
         if (s.status === ServerStatus.OFFLINE) {
-          if (Math.random() < 0.05) await this.setStatus(s.id, ServerStatus.ONLINE); // retour en ligne
+          if (Math.random() < 0.05)
+            await this.setStatus(s.id, ServerStatus.ONLINE); // retour en ligne
           continue;
         }
         if (s.status !== ServerStatus.ONLINE) continue;
@@ -40,7 +44,11 @@ export class MetricsSimulatorService {
           continue;
         }
         const { cpu, ram } = this.next(s.id);
-        const metric = await this.monitoring.create({ serverId: s.id, cpuUsage: cpu, ramUsage: ram });
+        const metric = await this.monitoring.create({
+          serverId: s.id,
+          cpuUsage: cpu,
+          ramUsage: ram,
+        });
         await this.evaluator.evaluate(metric);
       }
     } catch (e) {
@@ -71,7 +79,9 @@ export class MetricsSimulatorService {
   @Cron(CronExpression.EVERY_HOUR)
   async purge() {
     const cutoff = new Date(Date.now() - 7 * 24 * 3600_000);
-    const { count } = await this.prisma.metric.deleteMany({ where: { timestamp: { lt: cutoff } } });
+    const { count } = await this.prisma.metric.deleteMany({
+      where: { timestamp: { lt: cutoff } },
+    });
     if (count) this.logger.log(`Purged ${count} old metrics`);
   }
 }

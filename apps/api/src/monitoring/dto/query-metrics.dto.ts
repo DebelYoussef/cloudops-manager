@@ -6,5 +6,10 @@ export class QueryMetricsDto {
   @ApiPropertyOptional() @IsOptional() @Type(() => Date) @IsDate() from?: Date;
   @ApiPropertyOptional() @IsOptional() @Type(() => Date) @IsDate() to?: Date;
   @ApiPropertyOptional({ default: 100, maximum: 1000 })
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(1000) limit?: number = 100;
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  limit?: number = 100;
 }
