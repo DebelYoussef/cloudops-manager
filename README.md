@@ -1,7 +1,7 @@
 # CloudOps Manager
 
 Full-stack web platform to centralize the management of projects, servers and cloud applications, with monitoring indicators and alert handling.
-Academic project (NestJS / Next.js), 8 weeks, pair or trio, graded out of 20.
+Academic project (NestJS / Next.js), 8 weeks, pair or trio.
 
 ## Goals
 
@@ -30,7 +30,7 @@ Academic project (NestJS / Next.js), 8 weeks, pair or trio, graded out of 20.
 - Monitoring data is **simulated** (cron-based simulator) and **seed data** is provided
 - Password hashing is mandatory (bcrypt/argon2); rate limiting optional
 - Environments and deployment kept simple (university project)
-- Bonus targeted: CI/CD with GitHub Actions (up to +2, final grade capped at 20/20)
+- Bonus targeted: CI/CD with GitHub Actions 
 
 ## Architecture
 
